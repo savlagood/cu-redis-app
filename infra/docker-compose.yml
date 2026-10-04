@@ -1,0 +1,126 @@
+name: gamehub
+
+services:
+  redis-master:
+    image: redis:8
+    container_name: redis-master
+    ports:
+      - "6379:6379"
+    volumes:
+      - ./redis:/usr/local/etc/redis
+      - redis-master-data:/data
+    command: redis-server /usr/local/etc/redis/master.conf
+    networks:
+      - gamehub
+
+  redis-replica-1:
+    image: redis:8
+    container_name: redis-replica-1
+    ports:
+      - "6380:6379"
+    volumes:
+      - ./redis:/usr/local/etc/redis
+      - redis-replica-1-data:/data
+    command: redis-server /usr/local/etc/redis/replica-1.conf
+    depends_on:
+      - redis-master
+    networks:
+      - gamehub
+
+  redis-replica-2:
+    image: redis:8
+    container_name: redis-replica-2
+    ports:
+      - "6381:6379"
+    volumes:
+      - ./redis:/usr/local/etc/redis
+      - redis-replica-2-data:/data
+    command: redis-server /usr/local/etc/redis/replica-2.conf
+    depends_on:
+      - redis-master
+    networks:
+      - gamehub
+
+  sentinel-1:
+    image: redis:8
+    container_name: sentinel-1
+    ports:
+      - "26379:26379"
+    volumes:
+      - ./sentinel:/usr/local/etc/redis
+      - sentinel-1-data:/data
+    command: redis-server /usr/local/etc/redis/sentinel-1.conf --sentinel
+    depends_on:
+      - redis-master
+      - redis-replica-1
+      - redis-replica-2
+    networks:
+      - gamehub
+
+  sentinel-2:
+    image: redis:8
+    container_name: sentinel-2
+    ports:
+      - "26380:26379"
+    volumes:
+      - ./sentinel:/usr/local/etc/redis
+      - sentinel-2-data:/data
+    command: redis-server /usr/local/etc/redis/sentinel-2.conf --sentinel
+    depends_on:
+      - redis-master
+      - redis-replica-1
+      - redis-replica-2
+    networks:
+      - gamehub
+
+  sentinel-3:
+    image: redis:8
+    container_name: sentinel-3
+    ports:
+      - "26381:26379"
+    volumes:
+      - ./sentinel:/usr/local/etc/redis
+      - sentinel-3-data:/data
+    command: redis-server /usr/local/etc/redis/sentinel-3.conf --sentinel
+    depends_on:
+      - redis-master
+      - redis-replica-1
+      - redis-replica-2
+    networks:
+      - gamehub
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: redis-insight
+    ports:
+      - "5540:5540"
+    volumes:
+      - redis-insight-data:/data
+    networks:
+      - gamehub
+
+  app:
+    build: ../app
+    container_name: gamehub-app
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    depends_on:
+      - sentinel-1
+      - sentinel-2
+      - sentinel-3
+    networks:
+      - gamehub
+
+volumes:
+  redis-master-data:
+  redis-replica-1-data:
+  redis-replica-2-data:
+  sentinel-1-data:
+  sentinel-2-data:
+  sentinel-3-data:
+  redis-insight-data:
+
+networks:
+  gamehub:
+    driver: bridge
