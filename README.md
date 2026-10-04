@@ -245,13 +245,13 @@ PY
 
 ```bash
 curl -sS "$GAMEHUB_API/api/players/1001"
-python3 ../task/dz1_check_podman.py
+python3 checkers/dz1_check_podman.py
 ```
 
 Для Docker есть исходный вариант:
 
 ```bash
-(cd infra && python3 ../../task/dz1_check.py)
+python3 checkers/dz1_check.py
 ```
 
 Скрипт проверяет данные игрока `1001`, наличие хотя бы 10 профилей и настройки Redis. Данные создаются примерами из предыдущего раздела. Ожидаемый результат — 13 успешных проверок, без ошибок и пропусков.

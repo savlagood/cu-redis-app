@@ -7,7 +7,7 @@ import subprocess
 from pathlib import Path
 from shlex import quote
 
-COMPOSE_FILE = Path(__file__).resolve().parent.parent / "gamehub" / "infra" / "docker-compose.yml"
+COMPOSE_FILE = Path(__file__).resolve().parent.parent / "infra" / "docker-compose.yml"
 COMPOSE = f"podman compose -f {quote(str(COMPOSE_FILE))}"
 
 # Имена сервисов из docker-compose.yml. Поправьте, если ваши отличаются.

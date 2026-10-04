@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
 # Самопроверка домашнего задания по Redis
-# Запускать из корня проекта, где лежит docker-compose.yml
+# Можно запускать из любой папки: путь к Compose определяется относительно скрипта.
 
 import json
 import subprocess
+from pathlib import Path
+from shlex import quote
+
+COMPOSE_FILE = Path(__file__).resolve().parent.parent / "infra" / "docker-compose.yml"
+COMPOSE = f"docker compose -f {quote(str(COMPOSE_FILE))}"
 
 # Имена сервисов из docker-compose.yml. Поправьте, если ваши отличаются.
 MASTER = "redis-master"
@@ -24,10 +29,10 @@ def run(cmd):
         return []
 
 def run_redis(cmd):
-    return run(f"docker compose exec -T {MASTER} redis-cli --raw {cmd}")
+    return run(f"{COMPOSE} exec -T {MASTER} redis-cli --raw {cmd}")
 
 def run_sentinel(cmd):
-    return run(f"docker compose exec -T {SENTINEL} redis-cli -p {SENTINEL_PORT} --raw {cmd}")
+    return run(f"{COMPOSE} exec -T {SENTINEL} redis-cli -p {SENTINEL_PORT} --raw {cmd}")
 
 def get_first(lines):
     return lines[0].strip() if lines else None
@@ -57,7 +62,7 @@ def skip(msg):
 
 # 1. Инфраструктура Docker Compose
 print("=== 1. Инфраструктура Docker Compose ===")
-output = run("docker compose ps --format json")
+output = run(f"{COMPOSE} ps --format json")
 running = 0
 for line in output:
     try:
